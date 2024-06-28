@@ -15,6 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
+
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -94,10 +95,12 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     }
 });
 
-app.put('/api/profile', verifyToken, async (req, res) => {
+app.put('/api/profile/:profileId', verifyToken, async (req, res) => {
     try {
+        const { profileId } = req.params;
         const { fullName, dateOfBirth, placeOfBirth, nationality, education, skills, projects, workExperience, hobbies, personalGoals } = req.body;
-        const updatedProfile = await Profile.findByIdAndUpdate(req.userId, {
+
+        const updatedProfile = await Profile.findByIdAndUpdate(profileId, {
             fullName, dateOfBirth, placeOfBirth, nationality,
             education, skills, projects, workExperience, hobbies, personalGoals
         }, { new: true });
@@ -111,18 +114,23 @@ app.put('/api/profile', verifyToken, async (req, res) => {
     }
 });
 
-app.delete('/api/profile', verifyToken, async (req, res) => {
+app.delete('/api/profile/:profileId', verifyToken, async (req, res) => {
     try {
-        const deletedProfile = await Profile.findByIdAndDelete(req.userId);
+        const { profileId } = req.params;
+
+        const deletedProfile = await Profile.findByIdAndDelete(profileId)
+
         if (!deletedProfile) {
             return res.status(404).json({ error: 'Profile not found' });
         }
+
         res.json({ message: 'Profile deleted successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 
 const startServer = async () => {
     try {
